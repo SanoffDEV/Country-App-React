@@ -1,10 +1,15 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Card from "./Card";
+import SortContainer from "./SortContainer";
 
-const CardDisplay = ({ inputValue, searchinputValue, sortCountry }) => {
+const CardDisplay = ({
+  inputValue,
+  searchinputValue,
+  sortCountry,
+  regionOption,
+}) => {
   const [countriesData, setCountriesData] = useState([]);
-  const [countriesPop, setCountriesPop] = useState();
 
   useEffect(() => {
     axios
@@ -13,29 +18,54 @@ const CardDisplay = ({ inputValue, searchinputValue, sortCountry }) => {
       .catch((error) =>
         console.error("Erreur lors de la récupération des données:", error)
       );
-  }, []);
+  }, [searchinputValue]);
 
   return (
-    <div className="card-container">
-      {countriesData
-        .slice(0, parseInt(inputValue))
-        .sort((a, b) => {
-          if (sortCountry === "minToMax") {
-            return a.population - b.population;
-          } else if (sortCountry === "maxToMin") {
-            return b.population - a.population;
-          } else if (sortCountry === "alphabetic") {
-            return a.name.common.localeCompare(b.name.common);
-          }
-        })
-        .filter((country) => {
-          return country.name.common
-            .toLowerCase()
-            .includes(searchinputValue.toLowerCase());
-        })
-        .map((country) => (
-          <Card key={country.translations.fra.common} country={country} />
-        ))}
+    <div>
+      <div className="card-container">
+        {countriesData
+          .filter((country) => {
+            const excludedCountries = ["Saint Martin", "Sint Maarten"];
+            return !excludedCountries.includes(country.name.common);
+          })
+          .filter((country) =>
+            country.name.common
+              .toLowerCase()
+              .includes(searchinputValue?.toLowerCase())
+          )
+          .filter((country) => {
+            if (regionOption === "Region") {
+              return country.region;
+            } else if (regionOption === "Europe") {
+              return country.region === "Europe";
+            } else if (regionOption === "Africa") {
+              return country.region === "Africa";
+            } else if (regionOption === "Asia") {
+              return country.region === "Asia";
+            } else if (regionOption === "Oceania") {
+              return country.region === "Oceania";
+            } else if (regionOption === "Americas") {
+              return country.region === "Americas";
+            } else if (regionOption === "Antarctic") {
+              return country.region === "Antarctic";
+            } else if (regionOption === "noRegion") {
+              return country.region;
+            }
+          })
+          .sort((a, b) => {
+            if (sortCountry === "minToMax") {
+              return a.population - b.population;
+            } else if (sortCountry === "maxToMin") {
+              return b.population - a.population;
+            } else if (sortCountry === "alphabetic") {
+              return a.name.common.localeCompare(b.name.common);
+            }
+          })
+          .slice(0, parseInt(inputValue))
+          .map((country) => (
+            <Card key={country.translations.fra.common} country={country} />
+          ))}
+      </div>
     </div>
   );
 };
